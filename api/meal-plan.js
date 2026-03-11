@@ -1,5 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
-
 const PROMPT = `Generate a 7-day healthy meal plan as a JSON object. Return ONLY valid JSON with no markdown, no code blocks, no explanation.
 
 The JSON must follow this exact structure:
@@ -39,7 +37,8 @@ Requirements:
 - prep and time fields format: "5 min", "20 min", etc.
 - Make every meal unique — no repeats across the week`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {

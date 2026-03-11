@@ -1,3 +1,5 @@
+const { put, list } = require('@vercel/blob');
+
 const PROMPT = `Generate a 7-day healthy meal plan as a JSON object. Return ONLY valid JSON with no markdown, no code blocks, no explanation.
 
 The JSON must follow this exact structure:
@@ -37,11 +39,36 @@ Requirements:
 - prep and time fields format: "5 min", "20 min", etc.
 - Make every meal unique — no repeats across the week`;
 
-module.exports = async function handler(req, res) {
-  const { default: Anthropic } = await import('@anthropic-ai/sdk');
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getWeekKey() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil((((now - start) / 86400000) + start.getDay() + 1) / 7);
+  return `meal-plan-${now.getFullYear()}-W${String(week).padStart(2, '0')}.json`;
+}
 
+module.exports = async function handler(req, res) {
+  const weekKey = getWeekKey();
+
+  // Check blob storage for this week's plan
   try {
+    const { blobs } = await list({ prefix: 'meal-plan-' });
+    const thisWeek = blobs.find(b => b.pathname === weekKey);
+    if (thisWeek) {
+      const cached = await fetch(thisWeek.url);
+      const data = await cached.json();
+      res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).json(data);
+    }
+  } catch (e) {
+    console.log('Blob check failed, generating fresh:', e.message);
+  }
+
+  // Generate a new plan
+  try {
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
     const message = await client.messages.create({
       model: 'claude-haiku-4-5',
       max_tokens: 12000,
@@ -51,6 +78,9 @@ module.exports = async function handler(req, res) {
     const text = message.content[0].text;
     const jsonText = text.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim();
     const data = JSON.parse(jsonText);
+
+    // Save to blob for future requests this week
+    await put(weekKey, JSON.stringify(data), { access: 'public', addRandomSuffix: false });
 
     res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
     res.setHeader('Content-Type', 'application/json');

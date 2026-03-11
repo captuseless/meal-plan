@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@anthropic-ai/sdk": "latest"
+    "@anthropic-ai/sdk": "latest",
+    "@vercel/blob": "latest"
   }
 }

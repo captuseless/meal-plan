@@ -1,5 +1,10 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/meal-plan.html" }
-  ]
+  ],
+  "functions": {
+    "api/meal-plan.js": {
+      "maxDuration": 60
+    }
+  }
 }

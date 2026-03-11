@@ -59,7 +59,7 @@ Requirements:
     const data = JSON.parse(jsonText);
 
     // Cache in blob (recipes don't expire — they're evergreen)
-    await put(blobKey, JSON.stringify(data), { access: 'private', addRandomSuffix: false });
+    await put(blobKey, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true });
 
     res.setHeader('Cache-Control', 'public, s-maxage=2592000');
     res.setHeader('Content-Type', 'application/json');

@@ -76,7 +76,7 @@ module.exports = async function handler(req, res) {
     const data = JSON.parse(jsonText);
 
     // Save to blob for future requests this week
-    await put(weekKey, JSON.stringify(data), { access: 'private', addRandomSuffix: false });
+    await put(weekKey, JSON.stringify(data), { access: 'private', addRandomSuffix: false, allowOverwrite: true });
 
     res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
     res.setHeader('Content-Type', 'application/json');

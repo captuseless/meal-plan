@@ -54,7 +54,7 @@ module.exports = async function handler(req, res) {
     const { blobs } = await list({ prefix: 'meal-plan-' });
     const thisWeek = blobs.find(b => b.pathname === weekKey);
     if (thisWeek) {
-      const cached = await fetch(thisWeek.url);
+      const cached = await fetch(thisWeek.downloadUrl);
       const data = await cached.json();
       res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
       res.setHeader('Content-Type', 'application/json');
@@ -80,13 +80,13 @@ module.exports = async function handler(req, res) {
     const data = JSON.parse(jsonText);
 
     // Save to blob for future requests this week
-    await put(weekKey, JSON.stringify(data), { access: 'public', addRandomSuffix: false });
+    await put(weekKey, JSON.stringify(data), { access: 'private', addRandomSuffix: false });
 
     res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
     res.setHeader('Content-Type', 'application/json');
     return res.status(200).json(data);
   } catch (err) {
     console.error('Meal plan generation failed:', err);
-    return res.status(500).json({ error: 'Failed to generate meal plan' });
+    return res.status(500).json({ error: 'Failed to generate meal plan', detail: err.message });
   }
 }

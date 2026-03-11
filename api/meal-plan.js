@@ -50,7 +50,9 @@ module.exports = async function handler(req, res) {
     const { blobs } = await list({ prefix: 'meal-plan-v2-' });
     const thisWeek = blobs.find(b => b.pathname === weekKey);
     if (thisWeek) {
-      const cached = await fetch(thisWeek.downloadUrl);
+      const cached = await fetch(thisWeek.downloadUrl, {
+        headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` }
+      });
       const data = await cached.json();
       res.setHeader('Cache-Control', 'public, s-maxage=604800, stale-while-revalidate=86400');
       res.setHeader('Content-Type', 'application/json');

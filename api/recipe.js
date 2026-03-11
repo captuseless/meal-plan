@@ -18,7 +18,9 @@ module.exports = async function handler(req, res) {
     const { blobs } = await list({ prefix: 'recipe-' });
     const cached = blobs.find(b => b.pathname === blobKey);
     if (cached) {
-      const response = await fetch(cached.downloadUrl);
+      const response = await fetch(cached.downloadUrl, {
+        headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` }
+      });
       const data = await response.json();
       res.setHeader('Cache-Control', 'public, s-maxage=2592000');
       res.setHeader('Content-Type', 'application/json');

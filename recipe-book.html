@@ -400,7 +400,7 @@ function buildSidebar(data) {
     group.className = 'day-group';
     group.innerHTML = `<div class="day-group-title">${d.day}</div>` +
       d.meals.map((m, mi) => `
-        <div class="nav-item" id="nav-${di}-${mi}" onclick="scrollTo('recipe-${di}-${mi}')">
+        <div class="nav-item" id="nav-${di}-${mi}" onclick="scrollToRecipe('recipe-${di}-${mi}')">
           <span class="nav-dot" style="background:${dotColors[m.type]}"></span>
           ${m.name}
         </div>
@@ -455,7 +455,7 @@ function toggleRecipe(id) {
 function toggleSavedCard(id) {
   document.getElementById(id)?.classList.toggle('open');
 }
-function scrollTo(id) {
+function scrollToRecipe(id) {
   const el = document.getElementById(id);
   if(el) { el.scrollIntoView({behavior:'smooth', block:'start'}); el.classList.add('open'); }
 }

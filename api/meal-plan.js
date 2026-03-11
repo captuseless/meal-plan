@@ -1,6 +1,6 @@
 const { put, list } = require('@vercel/blob');
 
-const PROMPT = `Generate a 7-day healthy meal plan as a JSON object. Return ONLY valid JSON with no markdown, no code blocks, no explanation.
+const PROMPT = `Generate a 5-day healthy meal plan as a JSON object. Return ONLY valid JSON with no markdown, no code blocks, no explanation.
 
 The JSON must follow this exact structure:
 {
@@ -17,10 +17,7 @@ The JSON must follow this exact structure:
           "protein": "22g",
           "prep": "5 min",
           "time": "5 min",
-          "servings": 1,
-          "ingredients": ["1 cup full-fat Greek yogurt", "½ cup fresh blueberries", "2 tbsp granola"],
-          "steps": ["Step one instruction.", "Step two instruction.", "Step three instruction."],
-          "tip": "One practical cooking or prep tip."
+          "servings": 1
         }
       ]
     }
@@ -28,13 +25,12 @@ The JSON must follow this exact structure:
 }
 
 Requirements:
-- All 7 days: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+- Exactly 5 days: Monday, Tuesday, Wednesday, Thursday, Friday
 - Exactly 4 meals per day in this order: breakfast, lunch, snack, dinner
 - Total daily calories: 1400–1600 kcal
 - High protein focus, whole foods, weight-loss friendly
-- 4–5 ingredients per meal
-- 3–4 cooking steps per meal (keep steps brief, one sentence each)
-- One short practical tip per meal
+- Creative, appealing meal names — not generic
+- desc: one vivid sentence (max 15 words) highlighting flavor and key ingredient
 - protein field format: "22g" (number + g)
 - prep and time fields format: "5 min", "20 min", etc.
 - Make every meal unique — no repeats across the week`;
@@ -43,7 +39,7 @@ function getWeekKey() {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 1);
   const week = Math.ceil((((now - start) / 86400000) + start.getDay() + 1) / 7);
-  return `meal-plan-${now.getFullYear()}-W${String(week).padStart(2, '0')}.json`;
+  return `meal-plan-v2-${now.getFullYear()}-W${String(week).padStart(2, '0')}.json`;
 }
 
 module.exports = async function handler(req, res) {
@@ -51,7 +47,7 @@ module.exports = async function handler(req, res) {
 
   // Check blob storage for this week's plan
   try {
-    const { blobs } = await list({ prefix: 'meal-plan-' });
+    const { blobs } = await list({ prefix: 'meal-plan-v2-' });
     const thisWeek = blobs.find(b => b.pathname === weekKey);
     if (thisWeek) {
       const cached = await fetch(thisWeek.downloadUrl);
@@ -71,7 +67,7 @@ module.exports = async function handler(req, res) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 12000,
+      max_tokens: 4000,
       messages: [{ role: 'user', content: PROMPT }]
     });
 

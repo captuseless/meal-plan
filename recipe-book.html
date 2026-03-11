@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>7-Day Recipe Book</title>
+<title>5-Day Recipe Book</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -182,6 +182,10 @@ body { background:var(--bg); font-family:'Jost',sans-serif; color:var(--ink); }
   font-family:'Cormorant Garamond',serif;
   font-size:1.4rem; line-height:1.2; color:var(--ink);
 }
+.recipe-desc {
+  font-size:13px; color:var(--gray); font-weight:300;
+  margin-top:5px; line-height:1.5;
+}
 .recipe-meta { display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }
 .rmeta {
   font-size:11px; color:var(--gray);
@@ -225,6 +229,15 @@ body { background:var(--bg); font-family:'Jost',sans-serif; color:var(--ink); }
   margin-top:2px;
 }
 .recipe-card.open .recipe-body { display:grid; grid-template-columns:1fr 1fr; gap:28px; padding-top:22px; }
+.recipe-body-loading {
+  grid-column:1/-1;
+  text-align:center; padding:20px 0;
+  color:var(--gray); font-size:13px; font-weight:300;
+}
+.recipe-body-error {
+  grid-column:1/-1;
+  color:var(--terra); font-size:13px; padding:12px 0;
+}
 
 @media(max-width:680px) {
   .recipe-card.open .recipe-body { grid-template-columns:1fr; }
@@ -282,8 +295,8 @@ body { background:var(--bg); font-family:'Jost',sans-serif; color:var(--ink); }
     <div class="page-hero-inner">
       <a href="meal-plan.html" class="back-link">← Back to Meal Plan</a>
       <span class="hero-tag">🍽 Full Recipe Book</span>
-      <h1>28 Healthy Recipes<br>for Your Week</h1>
-      <p>Every meal from your 7-day plan — with ingredients, step-by-step instructions, and helpful tips. Click any recipe to expand it.</p>
+      <h1>20 Healthy Recipes<br>for Your Week</h1>
+      <p>Every meal from your 5-day plan — with ingredients, step-by-step instructions, and helpful tips. Click any recipe to expand it.</p>
     </div>
   </div>
   <div class="recipes-wrap" id="recipesWrap">
@@ -335,7 +348,6 @@ function removeSaved(fi) {
   favs.splice(fi, 1);
   saveFavs(favs);
   buildSaved();
-  // Refresh hearts on current week cards
   document.querySelectorAll('.fav-btn[data-key]').forEach(btn => {
     const meal = mealRegistry[btn.dataset.key];
     if (!meal) return;
@@ -345,14 +357,56 @@ function removeSaved(fi) {
   });
 }
 
+// — Recipe detail lazy loading —
+async function loadRecipeDetails(cardEl) {
+  const body = cardEl.querySelector('.recipe-body');
+  if (!body || body.dataset.loaded === 'true') return;
+
+  const name = body.dataset.name;
+  const type = body.dataset.type;
+
+  body.innerHTML = '<div class="recipe-body-loading">Loading recipe details…</div>';
+
+  try {
+    const res = await fetch(`/api/recipe?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`);
+    if (!res.ok) throw new Error('API error');
+    const d = await res.json();
+
+    body.innerHTML = `
+      <div class="ingredients-section">
+        <h4>Ingredients</h4>
+        <ul class="ingredients-list">${d.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="steps-section">
+        <h4>Instructions</h4>
+        <ol class="steps-list">${d.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      </div>
+      <div class="recipe-tip"><strong>💡 Chef's Tip:</strong> ${d.tip}</div>
+    `;
+    body.dataset.loaded = 'true';
+  } catch (e) {
+    body.innerHTML = '<div class="recipe-body-error">Failed to load recipe details. Click to try again.</div>';
+  }
+}
+
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  card.classList.toggle('open');
+  if (card.classList.contains('open')) {
+    loadRecipeDetails(card);
+  }
+}
+
 function recipeCardHTML(m, id, favBtnOnclick) {
   return `
     <div class="recipe-card" id="${id}">
-      <div class="recipe-header" onclick="${id.startsWith('fav') ? `toggleSavedCard('${id}')` : `toggleRecipe('${id}')`}">
+      <div class="recipe-header" onclick="toggleCard('${id}')">
         <div class="recipe-icon ${m.type}">${mealEmoji[m.type]}</div>
         <div class="recipe-header-text">
           <div class="recipe-type ${m.type}">${m.type}</div>
           <h3 class="recipe-name">${m.name}</h3>
+          ${m.desc ? `<p class="recipe-desc">${m.desc}</p>` : ''}
           <div class="recipe-meta">
             <span class="rmeta">🔥 ${m.cals} kcal</span>
             <span class="rmeta">⏱ ${m.time}</span>
@@ -362,16 +416,7 @@ function recipeCardHTML(m, id, favBtnOnclick) {
         <button class="fav-btn ${favBtnOnclick.saved ? 'saved' : ''}" onclick="event.stopPropagation();${favBtnOnclick.fn}" title="${favBtnOnclick.saved ? 'Remove from saved' : 'Save recipe'}">${favBtnOnclick.saved ? '❤️' : '🤍'}</button>
         <div class="recipe-toggle">+</div>
       </div>
-      <div class="recipe-body">
-        <div class="ingredients-section">
-          <h4>Ingredients</h4>
-          <ul class="ingredients-list">${m.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul>
-        </div>
-        <div class="steps-section">
-          <h4>Instructions</h4>
-          <ol class="steps-list">${m.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
-        </div>
-        <div class="recipe-tip"><strong>💡 Chef's Tip:</strong> ${m.tip}</div>
+      <div class="recipe-body" data-loaded="false" data-name="${m.name.replace(/"/g,'&quot;')}" data-type="${m.type}">
       </div>
     </div>`;
 }
@@ -394,7 +439,8 @@ function buildSaved() {
 
 function buildSidebar(data) {
   const sidebar = document.getElementById('sidebar');
-  sidebar.innerHTML = `<div class="sidebar-logo"><h2>7-Day<br>Recipe Book</h2><p>28 healthy recipes</p></div>`;
+  const total = data.reduce((sum, d) => sum + d.meals.length, 0);
+  sidebar.innerHTML = `<div class="sidebar-logo"><h2>5-Day<br>Recipe Book</h2><p>${total} healthy recipes</p></div>`;
   data.forEach((d, di) => {
     const group = document.createElement('div');
     group.className = 'day-group';
@@ -416,7 +462,7 @@ function buildRecipes(data) {
   data.forEach((d, di) => {
     const section = document.createElement('div');
     section.className = 'day-section';
-    section.innerHTML = `<h2 class="day-section-title">${d.day} <span>4 recipes</span></h2>` +
+    section.innerHTML = `<h2 class="day-section-title">${d.day} <span>${d.meals.length} recipes</span></h2>` +
       d.meals.map((m, mi) => {
         const key = `${di}-${mi}`;
         mealRegistry[key] = m;
@@ -426,7 +472,6 @@ function buildRecipes(data) {
         });
       }).join('');
 
-    // Attach data-key to fav buttons after innerHTML (can't do it inline safely)
     wrap.appendChild(section);
     section.querySelectorAll('.fav-btn').forEach((btn, mi) => {
       btn.dataset.key = `${di}-${mi}`;
@@ -449,15 +494,15 @@ async function init() {
 
 init();
 
-function toggleRecipe(id) {
-  document.getElementById(id)?.classList.toggle('open');
-}
-function toggleSavedCard(id) {
-  document.getElementById(id)?.classList.toggle('open');
-}
 function scrollToRecipe(id) {
   const el = document.getElementById(id);
-  if(el) { el.scrollIntoView({behavior:'smooth', block:'start'}); el.classList.add('open'); }
+  if (el) {
+    el.scrollIntoView({ behavior:'smooth', block:'start' });
+    if (!el.classList.contains('open')) {
+      el.classList.add('open');
+      loadRecipeDetails(el);
+    }
+  }
 }
 </script>
 </body>

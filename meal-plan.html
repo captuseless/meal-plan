@@ -439,81 +439,14 @@
   <div class="day-nav-inner" id="dayNav"></div>
 </nav>
 
-<main class="main" id="mainContent"></main>
+<main class="main" id="mainContent">
+  <div id="loadingState" style="text-align:center;padding:80px 0;color:var(--mid-gray)">
+    <p style="font-size:15px;font-weight:300">Loading your meal plan…</p>
+  </div>
+</main>
 
 <script>
-const days = [
-  {
-    day: "Monday",
-    calories: 1480,
-    meals: [
-      { type: "breakfast", name: "Greek Yogurt Parfait", desc: "Full-fat Greek yogurt layered with fresh blueberries, a drizzle of honey, and a handful of granola. Rich in probiotics and protein to fuel your morning.", cals: 340, protein: "22g", prep: "5 min" },
-      { type: "lunch", name: "Grilled Chicken Salad", desc: "Tender grilled chicken over mixed greens with cherry tomatoes, cucumber, avocado, and lemon-tahini dressing. Filling and nutrient-dense.", cals: 420, protein: "38g", prep: "15 min" },
-      { type: "snack", name: "Apple + Almond Butter", desc: "Sliced crisp apple with 2 tbsp natural almond butter. Perfect balance of fiber, healthy fat, and natural sugar.", cals: 200, protein: "6g", prep: "2 min" },
-      { type: "dinner", name: "Baked Salmon with Roasted Vegetables", desc: "Herb-crusted salmon fillet with roasted broccoli, bell peppers, and sweet potato. Omega-3 rich and deeply satisfying.", cals: 520, protein: "42g", prep: "30 min" }
-    ]
-  },
-  {
-    day: "Tuesday",
-    calories: 1510,
-    meals: [
-      { type: "breakfast", name: "Veggie Egg Scramble", desc: "Two eggs scrambled with spinach, diced bell pepper, mushrooms, and a sprinkle of feta. Served with a slice of whole grain toast.", cals: 360, protein: "24g", prep: "10 min" },
-      { type: "lunch", name: "Lentil & Vegetable Soup", desc: "Hearty red lentil soup with carrots, celery, cumin, and turmeric. High in fiber and plant protein, keeps you full for hours.", cals: 380, protein: "18g", prep: "25 min" },
-      { type: "snack", name: "Hummus & Veggie Sticks", desc: "3 tbsp of classic hummus with carrot sticks, cucumber rounds, and celery. Crunchy, satisfying, and full of nutrients.", cals: 190, protein: "7g", prep: "3 min" },
-      { type: "dinner", name: "Turkey Stir-Fry with Brown Rice", desc: "Lean ground turkey with broccoli, snap peas, and bok choy in a light ginger-soy sauce over nutty brown rice.", cals: 580, protein: "44g", prep: "20 min" }
-    ]
-  },
-  {
-    day: "Wednesday",
-    calories: 1490,
-    meals: [
-      { type: "breakfast", name: "Overnight Oats", desc: "Rolled oats soaked overnight in almond milk with chia seeds, banana slices, and a swirl of peanut butter. Prep the night before!", cals: 370, protein: "14g", prep: "5 min (night before)" },
-      { type: "lunch", name: "Quinoa Power Bowl", desc: "Fluffy quinoa with roasted chickpeas, shredded kale, cucumber, red onion, and a lemon-herb vinaigrette.", cals: 440, protein: "20g", prep: "20 min" },
-      { type: "snack", name: "Cottage Cheese & Berries", desc: "½ cup low-fat cottage cheese topped with strawberries and a pinch of cinnamon. High protein, low calorie afternoon boost.", cals: 170, protein: "14g", prep: "2 min" },
-      { type: "dinner", name: "Chicken & Vegetable Sheet Pan", desc: "Seasoned chicken thighs roasted alongside zucchini, cherry tomatoes, and onion with olive oil and Italian herbs.", cals: 510, protein: "40g", prep: "35 min" }
-    ]
-  },
-  {
-    day: "Thursday",
-    calories: 1505,
-    meals: [
-      { type: "breakfast", name: "Avocado Toast with Poached Egg", desc: "Whole grain toast smashed with ripe avocado, topped with a poached egg, red pepper flakes, and a squeeze of lemon.", cals: 390, protein: "18g", prep: "12 min" },
-      { type: "lunch", name: "Tuna-Stuffed Bell Peppers", desc: "Vibrant bell pepper halves filled with light tuna, diced celery, red onion, Greek yogurt dressing, and fresh dill.", cals: 340, protein: "32g", prep: "10 min" },
-      { type: "snack", name: "Mixed Nuts & Dark Chocolate", desc: "A small handful of walnuts, almonds, and cashews with 2 squares of 70%+ dark chocolate. Satisfying and heart-healthy.", cals: 210, protein: "6g", prep: "0 min" },
-      { type: "dinner", name: "Shrimp Tacos with Slaw", desc: "Seasoned shrimp in corn tortillas with purple cabbage slaw, avocado, fresh salsa, and a lime crema. Vibrant and light.", cals: 565, protein: "38g", prep: "20 min" }
-    ]
-  },
-  {
-    day: "Friday",
-    calories: 1475,
-    meals: [
-      { type: "breakfast", name: "Smoothie Bowl", desc: "Blended frozen mango and spinach base topped with kiwi, granola, hemp seeds, and toasted coconut flakes.", cals: 350, protein: "12g", prep: "8 min" },
-      { type: "lunch", name: "Turkey & Veggie Wrap", desc: "Whole wheat tortilla with sliced turkey breast, romaine, tomato, cucumber, hummus, and a drizzle of balsamic.", cals: 400, protein: "30g", prep: "5 min" },
-      { type: "snack", name: "Rice Cake with Cottage Cheese", desc: "Two rice cakes spread with cottage cheese, topped with sliced cucumber and everything bagel seasoning.", cals: 175, protein: "12g", prep: "3 min" },
-      { type: "dinner", name: "Grass-Fed Beef Stir-Fry", desc: "Lean beef strips with shiitake mushrooms, baby corn, broccolini, and a savory hoisin-ginger glaze on cauliflower rice.", cals: 550, protein: "45g", prep: "25 min" }
-    ]
-  },
-  {
-    day: "Saturday",
-    calories: 1520,
-    meals: [
-      { type: "breakfast", name: "Veggie-Packed Frittata", desc: "A beautiful baked egg frittata with sun-dried tomatoes, artichoke hearts, leeks, and goat cheese. Weekend-worthy!", cals: 380, protein: "26g", prep: "25 min" },
-      { type: "lunch", name: "Niçoise-Style Salad", desc: "Butter lettuce, canned tuna, hard-boiled eggs, green beans, kalamata olives, and Dijon vinaigrette. Elegant and effortless.", cals: 420, protein: "36g", prep: "15 min" },
-      { type: "snack", name: "Edamame with Sea Salt", desc: "A cup of steamed edamame lightly salted. One of the best high-protein plant snacks around.", cals: 190, protein: "17g", prep: "5 min" },
-      { type: "dinner", name: "Herb-Roasted Chicken with Lemon Potatoes", desc: "Whole roasted chicken thighs with garlic and rosemary over lemony roasted potatoes and green beans.", cals: 530, protein: "41g", prep: "45 min" }
-    ]
-  },
-  {
-    day: "Sunday",
-    calories: 1460,
-    meals: [
-      { type: "breakfast", name: "Whole Grain Pancakes", desc: "Fluffy whole wheat pancakes topped with fresh raspberries and a dollop of Greek yogurt instead of syrup.", cals: 360, protein: "16g", prep: "20 min" },
-      { type: "lunch", name: "Butternut Squash Soup + Salad", desc: "Silky roasted butternut squash soup with a simple arugula salad dressed in olive oil and shaved parmesan.", cals: 390, protein: "12g", prep: "30 min" },
-      { type: "snack", name: "Banana & Peanut Butter", desc: "One banana with a tablespoon of natural peanut butter. Classic, filling, and energizing.", cals: 205, protein: "5g", prep: "1 min" },
-      { type: "dinner", name: "Baked Cod with Asparagus & Farro", desc: "Flaky lemon-herb baked cod over nutty farro with roasted asparagus and cherry tomatoes. Light yet complete.", cals: 505, protein: "40g", prep: "30 min" }
-    ]
-  }
-];
+let days = [];
 
 const mealEmoji = { breakfast: "☀️", lunch: "🌿", snack: "🍎", dinner: "🌙" };
 
@@ -606,8 +539,22 @@ function switchDay(i) {
   document.querySelectorAll('.day-panel').forEach((p, pi) => p.classList.toggle('active', pi === i));
 }
 
-buildNav();
-buildPanels();
+async function init() {
+  try {
+    const res = await fetch('/api/meal-plan');
+    if (!res.ok) throw new Error('API error');
+    const json = await res.json();
+    days = json.days;
+    document.getElementById('loadingState').remove();
+    buildNav();
+    buildPanels();
+  } catch (e) {
+    document.getElementById('loadingState').innerHTML =
+      '<p style="color:var(--terracotta);font-size:14px">Failed to load meal plan. Please refresh the page.</p>';
+  }
+}
+
+init();
 </script>
 </body>
 </html>

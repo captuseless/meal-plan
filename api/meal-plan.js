@@ -10,7 +10,7 @@ The JSON must follow this exact structure:
         {
           "type": "breakfast",
           "name": "Meal Name Here",
-          "desc": "1-2 sentence appetizing description highlighting flavor and nutrition.",
+          "desc": "One sentence description highlighting flavor and nutrition.",
           "cals": 340,
           "protein": "22g",
           "prep": "5 min",
@@ -30,9 +30,9 @@ Requirements:
 - Exactly 4 meals per day in this order: breakfast, lunch, snack, dinner
 - Total daily calories: 1400–1600 kcal
 - High protein focus, whole foods, weight-loss friendly
-- 4–6 ingredients per meal
-- 3–6 cooking steps per meal
-- One practical tip per meal
+- 4–5 ingredients per meal
+- 3–4 cooking steps per meal (keep steps brief, one sentence each)
+- One short practical tip per meal
 - protein field format: "22g" (number + g)
 - prep and time fields format: "5 min", "20 min", etc.
 - Make every meal unique — no repeats across the week`;
@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 8000,
+      max_tokens: 12000,
       messages: [{ role: 'user', content: PROMPT }]
     });
 

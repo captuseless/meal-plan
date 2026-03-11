@@ -542,7 +542,10 @@ function switchDay(i) {
 async function init() {
   try {
     const res = await fetch('/api/meal-plan');
-    if (!res.ok) throw new Error('API error');
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`HTTP ${res.status}: ${body}`);
+    }
     const json = await res.json();
     days = json.days;
     document.getElementById('loadingState').remove();
@@ -550,7 +553,8 @@ async function init() {
     buildPanels();
   } catch (e) {
     document.getElementById('loadingState').innerHTML =
-      '<p style="color:var(--terracotta);font-size:14px">Failed to load meal plan. Please refresh the page.</p>';
+      `<p style="color:var(--terracotta);font-size:14px">Failed to load meal plan. Please refresh the page.</p>
+       <p style="color:var(--mid-gray);font-size:12px;margin-top:8px;font-family:monospace">${e.message}</p>`;
   }
 }
 

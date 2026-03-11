@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7-Day Healthy Meal Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf7f2;
+    --warm-white: #fff9f2;
+    --sage: #7a9e7e;
+    --sage-light: #a8c5ac;
+    --sage-dark: #4d7a52;
+    --terracotta: #c4714a;
+    --terracotta-light: #e8a882;
+    --charcoal: #2d2d2d;
+    --mid-gray: #6b6b6b;
+    --light-gray: #e8e3dc;
+    --gold: #c9962a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--charcoal);
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: var(--sage-dark);
+    opacity: 0.18;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 120px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    opacity: 0.12;
+  }
+
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--sage);
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--cream);
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+
+  header p {
+    color: var(--sage-light);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 460px;
+    line-height: 1.6;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 32px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: white;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--sage-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .stat-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.15);
+    align-self: stretch;
+  }
+
+  /* Day tabs */
+  .day-nav {
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--light-gray);
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .day-nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .day-nav-inner::-webkit-scrollbar { display: none; }
+
+  .day-btn {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mid-gray);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  .day-btn:hover { color: var(--sage-dark); }
+
+  .day-btn.active {
+    color: var(--sage-dark);
+    border-bottom-color: var(--sage);
+    font-weight: 600;
+  }
+
+  /* Main content */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 40px 60px;
+  }
+
+  .day-panel { display: none; }
+  .day-panel.active {
+    display: block;
+    animation: fadeIn 0.35s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 28px;
+  }
+
+  .day-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--charcoal);
+  }
+
+  .day-calories {
+    font-size: 13px;
+    color: var(--mid-gray);
+    font-weight: 400;
+  }
+
+  .day-calories span {
+    color: var(--terracotta);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  /* Meal cards */
+  .meals-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .meal-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 26px;
+    border: 1px solid var(--light-gray);
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .meal-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+
+  .meal-card.checked {
+    background: #f6faf6;
+    border-color: var(--sage-light);
+  }
+
+  .meal-card.checked::after {
+    content: '✓';
+    position: absolute;
+    top: 20px; right: 22px;
+    width: 28px; height: 28px;
+    background: var(--sage);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .meal-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .meal-type.breakfast { color: var(--gold); }
+  .meal-type.lunch { color: var(--sage-dark); }
+  .meal-type.dinner { color: var(--terracotta); }
+  .meal-type.snack { color: #8b72c8; }
+
+  .meal-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .meal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--charcoal);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .meal-desc {
+    font-size: 13.5px;
+    color: var(--mid-gray);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .meal-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--mid-gray);
+    background: var(--cream);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--light-gray);
+  }
+
+  /* Shopping list */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin: 40px 0 18px;
+    color: var(--charcoal);
+  }
+
+  .tips-card {
+    background: linear-gradient(135deg, var(--sage-dark) 0%, #3d6b44 100%);
+    border-radius: 16px;
+    padding: 26px 28px;
+    color: white;
+    margin-top: 40px;
+  }
+
+  .tips-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+    color: var(--sage-light);
+  }
+
+  .tips-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+
+  .tips-list li {
+    font-size: 13.5px;
+    font-weight: 300;
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+    opacity: 0.92;
+  }
+
+  .tips-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--terracotta-light);
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: var(--light-gray);
+    border-radius: 8px;
+    height: 6px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage) 0%, var(--sage-dark) 100%);
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--mid-gray);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  .recipes-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: var(--terracotta);
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 24px;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .recipes-link:hover { background: #b05e38; transform: translateY(-1px); }
+
+  @media (max-width: 600px) {
+    header, .day-nav, .main { padding-left: 20px; padding-right: 20px; }
+    .day-btn { padding: 14px 14px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="header-tag">🌿 Personalized Plan</span>
+    <h1>Your 7-Day<br>Healthy Meal Plan</h1>
+    <p>Balanced, satisfying meals designed for weight loss and lasting wellness — no restriction, just smart choices.</p>
+    <a href="recipe-book.html" class="recipes-link">📖 View All Recipes →</a>
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-value">~1,500</span>
+        <span class="stat-label">Calories / day</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">4</span>
+        <span class="stat-label">Meals / day</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">High</span>
+        <span class="stat-label">Protein focus</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">Whole</span>
+        <span class="stat-label">Food-based</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="day-nav">
+  <div class="day-nav-inner" id="dayNav"></div>
+</nav>
+
+<main class="main" id="mainContent"></main>
+
+<script>
+const days = [
+  {
+    day: "Monday",
+    calories: 1480,
+    meals: [
+      { type: "breakfast", name: "Greek Yogurt Parfait", desc: "Full-fat Greek yogurt layered with fresh blueberries, a drizzle of honey, and a handful of granola. Rich in probiotics and protein to fuel your morning.", cals: 340, protein: "22g", prep: "5 min" },
+      { type: "lunch", name: "Grilled Chicken Salad", desc: "Tender grilled chicken over mixed greens with cherry tomatoes, cucumber, avocado, and lemon-tahini dressing. Filling and nutrient-dense.", cals: 420, protein: "38g", prep: "15 min" },
+      { type: "snack", name: "Apple + Almond Butter", desc: "Sliced crisp apple with 2 tbsp natural almond butter. Perfect balance of fiber, healthy fat, and natural sugar.", cals: 200, protein: "6g", prep: "2 min" },
+      { type: "dinner", name: "Baked Salmon with Roasted Vegetables", desc: "Herb-crusted salmon fillet with roasted broccoli, bell peppers, and sweet potato. Omega-3 rich and deeply satisfying.", cals: 520, protein: "42g", prep: "30 min" }
+    ]
+  },
+  {
+    day: "Tuesday",
+    calories: 1510,
+    meals: [
+      { type: "breakfast", name: "Veggie Egg Scramble", desc: "Two eggs scrambled with spinach, diced bell pepper, mushrooms, and a sprinkle of feta. Served with a slice of whole grain toast.", cals: 360, protein: "24g", prep: "10 min" },
+      { type: "lunch", name: "Lentil & Vegetable Soup", desc: "Hearty red lentil soup with carrots, celery, cumin, and turmeric. High in fiber and plant protein, keeps you full for hours.", cals: 380, protein: "18g", prep: "25 min" },
+      { type: "snack", name: "Hummus & Veggie Sticks", desc: "3 tbsp of classic hummus with carrot sticks, cucumber rounds, and celery. Crunchy, satisfying, and full of nutrients.", cals: 190, protein: "7g", prep: "3 min" },
+      { type: "dinner", name: "Turkey Stir-Fry with Brown Rice", desc: "Lean ground turkey with broccoli, snap peas, and bok choy in a light ginger-soy sauce over nutty brown rice.", cals: 580, protein: "44g", prep: "20 min" }
+    ]
+  },
+  {
+    day: "Wednesday",
+    calories: 1490,
+    meals: [
+      { type: "breakfast", name: "Overnight Oats", desc: "Rolled oats soaked overnight in almond milk with chia seeds, banana slices, and a swirl of peanut butter. Prep the night before!", cals: 370, protein: "14g", prep: "5 min (night before)" },
+      { type: "lunch", name: "Quinoa Power Bowl", desc: "Fluffy quinoa with roasted chickpeas, shredded kale, cucumber, red onion, and a lemon-herb vinaigrette.", cals: 440, protein: "20g", prep: "20 min" },
+      { type: "snack", name: "Cottage Cheese & Berries", desc: "½ cup low-fat cottage cheese topped with strawberries and a pinch of cinnamon. High protein, low calorie afternoon boost.", cals: 170, protein: "14g", prep: "2 min" },
+      { type: "dinner", name: "Chicken & Vegetable Sheet Pan", desc: "Seasoned chicken thighs roasted alongside zucchini, cherry tomatoes, and onion with olive oil and Italian herbs.", cals: 510, protein: "40g", prep: "35 min" }
+    ]
+  },
+  {
+    day: "Thursday",
+    calories: 1505,
+    meals: [
+      { type: "breakfast", name: "Avocado Toast with Poached Egg", desc: "Whole grain toast smashed with ripe avocado, topped with a poached egg, red pepper flakes, and a squeeze of lemon.", cals: 390, protein: "18g", prep: "12 min" },
+      { type: "lunch", name: "Tuna-Stuffed Bell Peppers", desc: "Vibrant bell pepper halves filled with light tuna, diced celery, red onion, Greek yogurt dressing, and fresh dill.", cals: 340, protein: "32g", prep: "10 min" },
+      { type: "snack", name: "Mixed Nuts & Dark Chocolate", desc: "A small handful of walnuts, almonds, and cashews with 2 squares of 70%+ dark chocolate. Satisfying and heart-healthy.", cals: 210, protein: "6g", prep: "0 min" },
+      { type: "dinner", name: "Shrimp Tacos with Slaw", desc: "Seasoned shrimp in corn tortillas with purple cabbage slaw, avocado, fresh salsa, and a lime crema. Vibrant and light.", cals: 565, protein: "38g", prep: "20 min" }
+    ]
+  },
+  {
+    day: "Friday",
+    calories: 1475,
+    meals: [
+      { type: "breakfast", name: "Smoothie Bowl", desc: "Blended frozen mango and spinach base topped with kiwi, granola, hemp seeds, and toasted coconut flakes.", cals: 350, protein: "12g", prep: "8 min" },
+      { type: "lunch", name: "Turkey & Veggie Wrap", desc: "Whole wheat tortilla with sliced turkey breast, romaine, tomato, cucumber, hummus, and a drizzle of balsamic.", cals: 400, protein: "30g", prep: "5 min" },
+      { type: "snack", name: "Rice Cake with Cottage Cheese", desc: "Two rice cakes spread with cottage cheese, topped with sliced cucumber and everything bagel seasoning.", cals: 175, protein: "12g", prep: "3 min" },
+      { type: "dinner", name: "Grass-Fed Beef Stir-Fry", desc: "Lean beef strips with shiitake mushrooms, baby corn, broccolini, and a savory hoisin-ginger glaze on cauliflower rice.", cals: 550, protein: "45g", prep: "25 min" }
+    ]
+  },
+  {
+    day: "Saturday",
+    calories: 1520,
+    meals: [
+      { type: "breakfast", name: "Veggie-Packed Frittata", desc: "A beautiful baked egg frittata with sun-dried tomatoes, artichoke hearts, leeks, and goat cheese. Weekend-worthy!", cals: 380, protein: "26g", prep: "25 min" },
+      { type: "lunch", name: "Niçoise-Style Salad", desc: "Butter lettuce, canned tuna, hard-boiled eggs, green beans, kalamata olives, and Dijon vinaigrette. Elegant and effortless.", cals: 420, protein: "36g", prep: "15 min" },
+      { type: "snack", name: "Edamame with Sea Salt", desc: "A cup of steamed edamame lightly salted. One of the best high-protein plant snacks around.", cals: 190, protein: "17g", prep: "5 min" },
+      { type: "dinner", name: "Herb-Roasted Chicken with Lemon Potatoes", desc: "Whole roasted chicken thighs with garlic and rosemary over lemony roasted potatoes and green beans.", cals: 530, protein: "41g", prep: "45 min" }
+    ]
+  },
+  {
+    day: "Sunday",
+    calories: 1460,
+    meals: [
+      { type: "breakfast", name: "Whole Grain Pancakes", desc: "Fluffy whole wheat pancakes topped with fresh raspberries and a dollop of Greek yogurt instead of syrup.", cals: 360, protein: "16g", prep: "20 min" },
+      { type: "lunch", name: "Butternut Squash Soup + Salad", desc: "Silky roasted butternut squash soup with a simple arugula salad dressed in olive oil and shaved parmesan.", cals: 390, protein: "12g", prep: "30 min" },
+      { type: "snack", name: "Banana & Peanut Butter", desc: "One banana with a tablespoon of natural peanut butter. Classic, filling, and energizing.", cals: 205, protein: "5g", prep: "1 min" },
+      { type: "dinner", name: "Baked Cod with Asparagus & Farro", desc: "Flaky lemon-herb baked cod over nutty farro with roasted asparagus and cherry tomatoes. Light yet complete.", cals: 505, protein: "40g", prep: "30 min" }
+    ]
+  }
+];
+
+const mealEmoji = { breakfast: "☀️", lunch: "🌿", snack: "🍎", dinner: "🌙" };
+
+function buildNav() {
+  const nav = document.getElementById('dayNav');
+  days.forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = d.day;
+    btn.onclick = () => switchDay(i);
+    nav.appendChild(btn);
+  });
+}
+
+function buildPanels() {
+  const main = document.getElementById('mainContent');
+  days.forEach((d, di) => {
+    const panel = document.createElement('div');
+    panel.className = 'day-panel' + (di === 0 ? ' active' : '');
+    panel.id = 'panel-' + di;
+
+    const checkedKey = `checked-${di}`;
+    const checked = JSON.parse(sessionStorage.getItem(checkedKey) || '[]');
+
+    panel.innerHTML = `
+      <div class="day-header">
+        <h2 class="day-title">${d.day}</h2>
+        <div class="day-calories">Total: <span>~${d.calories} kcal</span></div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="prog-${di}" style="width:${(checked.length/4)*100}%"></div>
+      </div>
+      <p class="progress-label" id="prog-label-${di}">${checked.length} of 4 meals logged</p>
+      <div class="meals-grid" id="meals-${di}">
+        ${d.meals.map((m, mi) => `
+          <div class="meal-card${checked.includes(mi) ? ' checked' : ''}" id="card-${di}-${mi}" onclick="toggleMeal(${di},${mi})">
+            <div class="meal-type ${m.type}">${mealEmoji[m.type]} <span>${m.type.charAt(0).toUpperCase()+m.type.slice(1)}</span></div>
+            <h3 class="meal-name">${m.name}</h3>
+            <p class="meal-desc">${m.desc}</p>
+            <div class="meal-meta">
+              <span class="meta-pill">🔥 ${m.cals} kcal</span>
+              <span class="meta-pill">💪 ${m.protein} protein</span>
+              <span class="meta-pill">⏱ ${m.prep}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    if (di === 6) {
+      panel.innerHTML += `
+        <div class="tips-card">
+          <h3>🌱 Tips for Success</h3>
+          <ul class="tips-list">
+            <li>Drink at least 8 glasses of water daily — hunger is often thirst in disguise.</li>
+            <li>Prep grains (quinoa, brown rice, farro) in a big batch on Sundays to save time all week.</li>
+            <li>Eat slowly and pause halfway through meals — your brain needs 20 minutes to register fullness.</li>
+            <li>Keep healthy snacks visible and accessible so you reach for them first.</li>
+            <li>Don't skip meals — consistent eating prevents overeating later in the day.</li>
+            <li>Get 7–8 hours of sleep. Poor sleep increases hunger hormones like ghrelin significantly.</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    main.appendChild(panel);
+  });
+}
+
+function toggleMeal(di, mi) {
+  const card = document.getElementById(`card-${di}-${mi}`);
+  const checkedKey = `checked-${di}`;
+  let checked = JSON.parse(sessionStorage.getItem(checkedKey) || '[]');
+
+  if (checked.includes(mi)) {
+    checked = checked.filter(x => x !== mi);
+    card.classList.remove('checked');
+  } else {
+    checked.push(mi);
+    card.classList.add('checked');
+  }
+
+  sessionStorage.setItem(checkedKey, JSON.stringify(checked));
+  document.getElementById(`prog-${di}`).style.width = `${(checked.length / 4) * 100}%`;
+  document.getElementById(`prog-label-${di}`).textContent = `${checked.length} of 4 meals logged`;
+}
+
+function switchDay(i) {
+  document.querySelectorAll('.day-btn').forEach((b, bi) => b.classList.toggle('active', bi === i));
+  document.querySelectorAll('.day-panel').forEach((p, pi) => p.classList.toggle('active', pi === i));
+}
+
+buildNav();
+buildPanels();
+</script>
+</body>
+</html>
